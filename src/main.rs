@@ -1,4 +1,5 @@
 fn main() {
+    // main for test purposes, will be turned to lib in a future
     let p = Point{x: 10, y: 10};
     let poly = Polygon{
         points: vec!(Point{x: 5, y: 5},Point{x: 15,y: 5},Point{x: 15,y: 15},Point{x: 5, y: 15}),
@@ -79,16 +80,16 @@ impl Line {
         let a = numerator1 as f64 / denominator as f64;
         let b = numerator2 as f64 / denominator as f64;
 
+        if a < 0.0 || a > 1.0 || b < 0.0 || b > 1.0 {
+            return None
+        }
+
         let result = Point{
             x: line_1_start.x + (a * (line_1_end.x - line_1_start.x) as f64).round() as i32,
             y: line_1_start.y + (a * (line_1_end.y - line_1_start.y) as f64).round() as i32,
         };
 
-        if a > 0.0 && a < 1.0 && b > 0.0 && b < 1.0 {
-            return Some(result)
-        }
-
-        return None
+        Some(result)
     }
 }
 
