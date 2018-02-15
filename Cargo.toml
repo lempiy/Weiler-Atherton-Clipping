@@ -1,0 +1,6 @@
+[package]
+name = "poly"
+version = "0.1.0"
+authors = ["Anton Lempiy <lempiyada@gmail.com>"]
+
+[dependencies]
