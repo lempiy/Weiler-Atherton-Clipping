@@ -21,6 +21,19 @@ fn main() {
         Some(point) => println!("result get_intersection is: x: {} y: {}", point.x, point.y),
         None => {}
     }
+
+    let p = Point{
+        x: 5,
+        y: 15,
+    };
+
+    let line = Line{
+        start: Point{x: 5, y: 5},
+        end: Point{x: 5, y: 20},
+    };
+
+    let result = p.is_in_line(line);
+    println!("result is_in_line is: {}", result);
 }
 
 struct Point {
@@ -55,6 +68,34 @@ impl Point {
         }
         inside
     }
+
+    fn is_in_line(self, line: Line)->bool {
+        let dxc = self.x - line.start.x;
+        let dyc = self.y - line.start.y;
+
+        let dxl = line.end.x - line.start.x;
+        let dyl = line.end.y - line.start.y;
+
+        let cross = dxc * dyl - dyc * dxl;
+
+        if cross != 0 {
+            return false
+        }
+
+        if dxl.abs() >= dyl.abs() {
+            if dxl > 0 {
+                line.start.x <= self.x && self.x <= line.end.x
+            } else {
+                line.end.x <= self.x && self.x <= line.start.x
+            }
+        } else {
+            if dyl > 0 {
+                line.start.y <= self.y && self.y <= line.end.y
+            } else {
+                line.end.y <= self.y && self.y <= line.start.y
+            }
+        }
+    }
 }
 
 impl Line {
@@ -62,23 +103,23 @@ impl Line {
         let (line_1_start, line_1_end) = (self.start, self.end);
         let (line_2_start, line_2_end) = (line.start, line.end);
 
-        let denominator = ((line_2_end.y - line_2_start.y) * (line_1_end.x - line_1_start.x)) -
+        let den = ((line_2_end.y - line_2_start.y) * (line_1_end.x - line_1_start.x)) -
             ((line_2_end.x - line_2_start.x) * (line_1_end.y - line_1_start.y));
 
-        if denominator == 0 {
+        if den == 0 {
             return None
         }
 
         let a = line_1_start.y - line_2_start.y;
         let b = line_1_start.x - line_2_start.x;
 
-        let numerator1 = ((line_2_end.x - line_2_start.x) * a) -
+        let num_1 = ((line_2_end.x - line_2_start.x) * a) -
             ((line_2_end.y - line_2_start.y) * b);
-        let numerator2 = ((line_1_end.x - line_1_start.x) * a) -
+        let num_2 = ((line_1_end.x - line_1_start.x) * a) -
             ((line_1_end.y - line_1_start.y) * b);
 
-        let a = numerator1 as f64 / denominator as f64;
-        let b = numerator2 as f64 / denominator as f64;
+        let a = num_1 as f64 / den as f64;
+        let b = num_2 as f64 / den as f64;
 
         if a < 0.0 || a > 1.0 || b < 0.0 || b > 1.0 {
             return None
