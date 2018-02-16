@@ -4,7 +4,7 @@ fn main() {
     let poly = Polygon{
         points: vec!(Point{x: 5, y: 5},Point{x: 15,y: 5},Point{x: 15,y: 15},Point{x: 5, y: 15}),
     };
-    let result = p.is_in_polygon(poly);
+    let result = p.is_in_polygon(&poly);
     println!("result is_in_polygon is: {}", result);
 
     let line = Line{
@@ -17,7 +17,7 @@ fn main() {
         end: Point{x: 5, y: 20},
     };
 
-    match line.get_intersection(intersect_line) {
+    match line.get_intersection(&intersect_line) {
         Some(point) => println!("result get_intersection is: x: {} y: {}", point.x, point.y),
         None => {}
     }
@@ -32,10 +32,15 @@ fn main() {
         end: Point{x: 5, y: 20},
     };
 
-    let result = p.is_in_line(line);
+    let result = p.is_in_line(&line);
     println!("result is_in_line is: {}", result);
+
+    println!("result before get_reversed is: {:?}", poly);
+    let rev_poly = poly.get_reversed();
+    println!("result after get_reversed is: {:?}", rev_poly);
 }
 
+#[derive(Clone,Debug)]
 struct Point {
     x: i32,
     y: i32,
@@ -46,12 +51,13 @@ struct Line {
     end: Point,
 }
 
+#[derive(Debug)]
 struct Polygon {
     points: Vec<Point>
 }
 
 impl Point {
-    fn is_in_polygon(self, poly: Polygon)->bool {
+    fn is_in_polygon(self, poly: &Polygon)->bool {
         let (x, y) = (self.x, self.y);
         let mut inside: bool = false;
         let mut j = poly.points.len() - 1;
@@ -69,7 +75,7 @@ impl Point {
         inside
     }
 
-    fn is_in_line(self, line: Line)->bool {
+    fn is_in_line(self, line: &Line)->bool {
         let dxc = self.x - line.start.x;
         let dyc = self.y - line.start.y;
 
@@ -99,9 +105,9 @@ impl Point {
 }
 
 impl Line {
-    fn get_intersection(self, line: Line) -> Option<Point> {
+    fn get_intersection<'a>(self, line: &Line) -> Option<Point> {
         let (line_1_start, line_1_end) = (self.start, self.end);
-        let (line_2_start, line_2_end) = (line.start, line.end);
+        let (line_2_start, line_2_end) = (line.start.clone(), line.end.clone());
 
         let den = ((line_2_end.y - line_2_start.y) * (line_1_end.x - line_1_start.x)) -
             ((line_2_end.x - line_2_start.x) * (line_1_end.y - line_1_start.y));
@@ -134,3 +140,19 @@ impl Line {
     }
 }
 
+impl Polygon {
+    fn is_clockwise(self)-> bool {
+        let mut sum = 0;
+        for (i, p) in self.points.iter().enumerate() {
+            let mut j = if i != self.points.len() - 1 {i + 1} else {0};
+            sum += (self.points[j].x - p.x)*(self.points[j].y + p.y)
+        }
+        sum > 0
+    }
+    fn get_reversed(self)->Polygon {
+        let points: Vec<Point> = self.points.iter().rev().map(|n| n.clone()).collect();
+        Polygon{
+            points
+        }
+    }
+}
