@@ -223,7 +223,7 @@ impl Polygon {
         let mut subject_as_list = true;
         let mut start_point = initial.clone();
         let mut end_point = subject[subject.len()-1].clone().get_point();
-        let mut current_list = &mut *subject.clone();
+        let mut current_list = &mut subject.clone();
         while initial != end_point {
             if let Some(values) = Polygon::collect_from_list(current_list, start_point) {
                 let (mut edges, end) = values;
