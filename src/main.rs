@@ -70,19 +70,25 @@ impl InterVertex {
         }
     }
 
-    fn get_first_in_intersection(list: &Vec<InterVertex>)->Option<Point> {
-        if let Some(p) = list
-            .iter()
+    fn get_first_in_intersection(list: &mut Vec<InterVertex>)->Option<Point> {
+        let mut found = 0;
+        let mut result = None;
+        if let Some(p) = list.iter()
+            .enumerate()
             .find(|x| {
-                if let InterVertex::InIntersection(_) = **x {
+                let (i, x) = *x;
+                if let InterVertex::InIntersection(_) = *x {
+                    found = i;
                     return true
                 }
                 false
             }) {
-            Some(p.get_point())
-        } else {
-            None
-        }
+            result = Some(p.1.get_point());
+        };
+        for i in 0..found-1 {
+            list.remove(i);
+        };
+        result
     }
 }
 
@@ -177,7 +183,7 @@ impl Polygon {
         match option {
             PolyListOption::List(subject_list) => {
                 match other_option {
-                    PolyListOption::List(clip_list) => {
+                    PolyListOption::List(mut clip_list) => {
                         Polygon::get_clip_polygons(subject_list, clip_list)
                     },
                     PolyListOption::InsidePoly(list) => Some(vec![list]),
@@ -189,41 +195,19 @@ impl Polygon {
         }
     }
 
-    fn get_clip_polygons(subject: Vec<InterVertex>, clip: Vec<InterVertex>)
-        ->Option<Vec<Vec<Point>>> {
+    fn get_clip_polygons(mut subject: Vec<InterVertex>, mut clip: Vec<InterVertex>)
+                         ->Option<Vec<Vec<Point>>> {
         let mut result: Vec<Vec<Point>> = Vec::new();
-
-        if subject.len() < 2 || clip.len() < 2 {
-            return None
-        }
-        // first point is always outside vertex so we can start from second
-        let initial = InterVertex::get_first_in_intersection(&subject).unwrap();
-        let mut start = initial.clone();
-        println!("START {:?}\n{:?}\n{:?}", start, subject, clip);
-        let mut k = 0;
-        loop {
-            println!("THIS 0 {:?}\n ===> {:?}", start, subject);
-            if let Some(value) = Polygon::collect_from_list(&subject, &mut start, true) {
-                let (mut subject_edges, end) = value;
-                println!("THIS 1 {:?}\n{:?}", clip, end);
-                if let Some(value) = Polygon::collect_from_list(&clip, end, false) {
-                    println!("THIS 2");
-                    let (mut clip_edges, _) = value;
-                    subject_edges.append(&mut clip_edges);
-                    println!("{:?}", subject_edges);
-                    result.push(subject_edges);
-                }
-
-                println!("HERE {:?} {:?}", end, initial);
-                if *end == initial {
-                    break
-                }
+        println!("{}", subject.len());
+        while let Some(start_point) =
+            InterVertex::get_first_in_intersection(&mut subject) {
+            if let Some(poly) =
+                Polygon::get_clip_polygon(&mut subject, &mut clip, start_point.clone()) {
+                result.push(poly);
+            } else {
+                break;
             }
-            k = k+1;
-            if k > 3 {
-                break
-            }
-        }
+        };
         if result.len() > 0 {
             Some(result)
         } else {
@@ -231,18 +215,54 @@ impl Polygon {
         }
     }
 
-    fn collect_from_list<'a>(list: &Vec<InterVertex>, last_point: &'a mut Point, is_subject: bool)
-        ->Option<(Vec<Point>, &'a mut Point)> {
-        let mut enter_vertex_not_found = true;
+    fn get_clip_polygon(subject: &mut Vec<InterVertex>, clip: &mut Vec<InterVertex>, initial: Point)
+        ->Option<Vec<Point>> {
+        let mut result: Vec<Point> = Vec::new();
+
+
+        let mut subject_as_list = true;
+        let mut start_point = initial.clone();
+        let mut end_point = subject[subject.len()-1].clone().get_point();
+        let mut current_list = &mut *subject.clone();
+        while initial != end_point {
+            if let Some(values) = Polygon::collect_from_list(current_list, start_point) {
+                let (mut edges, end) = values;
+                end_point = end.clone();
+                start_point = end.clone();
+                if subject_as_list {
+                    current_list = &mut *clip;
+                    subject_as_list = false;
+                } else {
+                    current_list = &mut *subject;
+                    subject_as_list = true;
+                }
+                result.append(&mut edges);
+            } else {
+                println!("something went wrong");
+                return None
+            }
+        };
+        if result.len() > 0 {
+            Some(result)
+        } else {
+            None
+        }
+    }
+
+    fn collect_from_list(list: &mut Vec<InterVertex>, start_point: Point)
+        ->Option<(Vec<Point>, Point)> {
         let mut initial_vertex_not_found = true;
-        let point_value = last_point.clone();
+        let mut last_point: Option<Point> = None;
+        let (mut start_i, mut end_i) = (0,0);
+        let dont_skip = list[0].get_point() == start_point;
         let points:Vec<Point> = list
             .iter()
             .enumerate()
             .skip_while(|x|{
                 // need to skip until InIntersection occurs,
                 // but include the InIntersection
-                let (i, _) = *x;
+                if dont_skip {return false};
+                let (i, p) = *x;
                 let next = if i == list.len() - 1 {
                     0
                 } else {
@@ -250,53 +270,32 @@ impl Polygon {
                 };
 
                 let next_point = &list[next];
-
-                if next_point.get_point() == point_value {
+                if next_point.get_point() == start_point {
+                    start_i = next;
                     initial_vertex_not_found = false;
-                    println!("found initial {:?}", next_point);
                     return true
                 }
                 initial_vertex_not_found
             })
-            .skip_while(|x| {
-                if !is_subject {
-                    return false
-                };
-
-                let (i, p) = *x;
-                if let &InterVertex::InIntersection(_) = p {
-                    return false;
-                }
-                let next = if i == list.len() - 1 {
-                    0
-                } else {
-                    i + 1
-                };
-
-                let next_point = &list[next];
-                if let &InterVertex::InIntersection(_) = next_point {
-                    enter_vertex_not_found = false;
-                    if !enter_vertex_not_found {println!("found enter {:?}", next_point)};
-                    return true
-                }
-                enter_vertex_not_found
-            })
             .take_while(|x| {
-                let (_, x) = *x;
+                let (i, x) = *x;
                 if let InterVertex::OutIntersection(ref p) = *x {
-                    if is_subject {*last_point = p.clone()};
+                    end_i = i;
+                    last_point = Some(p.clone());
                     return false
                 }
                 true
             })
             .map(|x| {
-                println!("map {:?}", x);
                 let (_, x) = x;
                 x.get_point()
             })
             .collect();
+        for i in start_i..end_i {
+            list.remove(i);
+        }
         if points.len() > 0 {
-            Some((points, last_point))
+            Some((points, last_point.unwrap()))
         } else {
             None
         }
