@@ -85,9 +85,11 @@ impl InterVertex {
             }) {
             result = Some(p.1.get_point());
         };
-        for i in 0..found-1 {
-            list.remove(i);
-        };
+        if found > 0 {
+            for i in 0..found-1 {
+                list.remove(i);
+            };
+        }
         result
     }
 }
@@ -201,6 +203,7 @@ impl Polygon {
         println!("{}", subject.len());
         while let Some(start_point) =
             InterVertex::get_first_in_intersection(&mut subject) {
+            println!("subject before {:?}", subject);
             if let Some(poly) =
                 Polygon::get_clip_polygon(&mut subject, &mut clip, start_point.clone()) {
                 result.push(poly);
@@ -223,17 +226,17 @@ impl Polygon {
         let mut subject_as_list = true;
         let mut start_point = initial.clone();
         let mut end_point = subject[subject.len()-1].clone().get_point();
-        let mut current_list = &mut subject.clone();
         while initial != end_point {
-            if let Some(values) = Polygon::collect_from_list(current_list, start_point) {
+            println!("subject after {:?}", subject);
+            if let Some(values) = Polygon::collect_from_list(
+                if subject_as_list{subject}else{clip}
+                , start_point) {
                 let (mut edges, end) = values;
                 end_point = end.clone();
                 start_point = end.clone();
                 if subject_as_list {
-                    current_list = &mut *clip;
                     subject_as_list = false;
                 } else {
-                    current_list = &mut *subject;
                     subject_as_list = true;
                 }
                 result.append(&mut edges);
@@ -262,7 +265,7 @@ impl Polygon {
                 // need to skip until InIntersection occurs,
                 // but include the InIntersection
                 if dont_skip {return false};
-                let (i, p) = *x;
+                let (i, _) = *x;
                 let next = if i == list.len() - 1 {
                     0
                 } else {
