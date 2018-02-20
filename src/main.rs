@@ -6,8 +6,8 @@ fn main() {
     let poly = Polygon{
         points: vec!(
             Point{x: 1, y: 1},
-            Point{x: 7,y: 3},
-            Point{x: 1,y: 8},
+            Point{x: 7, y: 3},
+            Point{x: 1, y: 8},
             Point{x: 3, y: 4},
             Point{x: 1, y: 3},
         ),
@@ -15,16 +15,17 @@ fn main() {
     let inter_polygon = Polygon{
         points: vec!(
             Point{x: 4, y: 3},
-            Point{x: 5,y: 4},
-            Point{x: 8,y: 1},
+            Point{x: 5, y: 4},
+            Point{x: 8, y: 1},
             Point{x: 8, y: 5},
             Point{x: 4, y: 7}),
     };
 
     let p = Point{
         x: 5,
-        y: 15,
+        y: 4,
     };
+
 
     let line = Line{
         start: Point{x: 5, y: 5},
@@ -121,9 +122,8 @@ impl Point {
         for (i, p) in poly.points.iter().enumerate() {
             let (xi, yi) = (p.x, p.y);
             let (xj, yj) = (poly.points[j].x, poly.points[j].y);
-
-            let intersect = ((yi > y) != (yj > y)) &&
-                (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            let intersect = ((yi > y) != (yj > y))
+                && ((x as f64) < ((xj - xi) * (y - yi)) as f64 / (yj - yi) as f64 + xi as f64);
             if intersect {
                 inside = !inside;
             }
@@ -282,10 +282,16 @@ impl Polygon {
                 };
 
                 let next_point = &list[next];
-                if next_point.get_point() == start_point {
-                    start_i = next;
-                    initial_vertex_not_found = false;
-                    return true
+                match next_point {
+                    &InterVertex::InIntersection(_) | &InterVertex::OutIntersection(_) => {
+                        if next_point.get_point() == start_point {
+                            start_i = next;
+                            initial_vertex_not_found = false;
+                            return true
+                        }
+                        return true
+                    },
+                    &InterVertex::InsideVertex(_) |  &InterVertex::OutsideVertex(_) => {}
                 }
                 initial_vertex_not_found
             })
@@ -305,8 +311,9 @@ impl Polygon {
                 x.get_point()
             })
             .collect();
-        for i in start_i..end_i {
-            list.remove(i);
+        let amount = end_i - start_i;
+        for i in 0..amount {
+            list.remove(start_i);
         }
         if points.len() > 0 {
             Some((points, last_point.unwrap()))
@@ -451,8 +458,8 @@ impl Line {
         }
 
         let result = Point{
-            x: line_1_start.x + (a * (line_1_end.x - line_1_start.x) as f64).round() as i32,
-            y: line_1_start.y + (a * (line_1_end.y - line_1_start.y) as f64).round() as i32,
+            x: line_1_start.x + (a * (line_1_end.x - line_1_start.x) as f64).ceil() as i32,
+            y: line_1_start.y + (a * (line_1_end.y - line_1_start.y) as f64).ceil() as i32,
         };
 
         Some(result)
