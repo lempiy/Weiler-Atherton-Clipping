@@ -5,20 +5,20 @@ fn main() {
     // main for test purposes, will be turned to lib in a future
     let poly = Polygon{
         points: vec!(
-            Point{x: 4, y: 2},
-            Point{x: 20,y: 8},
-            Point{x: 10,y: 12},
-            Point{x: 18, y: 20},
-            Point{x: 4, y: 22},
-            Point{x: 10, y: 18},
+            Point{x: 1, y: 1},
+            Point{x: 7,y: 3},
+            Point{x: 1,y: 8},
+            Point{x: 3, y: 4},
+            Point{x: 1, y: 3},
         ),
     };
     let inter_polygon = Polygon{
         points: vec!(
-            Point{x: 14, y: 4},
-            Point{x: 16,y: 2},
-            Point{x: 16,y: 22},
-            Point{x: 14, y: 22}),
+            Point{x: 4, y: 3},
+            Point{x: 5,y: 4},
+            Point{x: 8,y: 1},
+            Point{x: 8, y: 5},
+            Point{x: 4, y: 7}),
     };
 
     let p = Point{
@@ -97,7 +97,7 @@ impl InterVertex {
             result = Some(p.1.get_point());
         };
         if found > 0 {
-            for i in 0..found {
+            for _ in 0..found {
                 list.remove(0);
             };
         }
@@ -193,7 +193,6 @@ impl Polygon {
     fn clip(&self, other: &Polygon) -> Option<Vec<Vec<Point>>> {
         let option = self.get_inter_vertex_list(other);
         let other_option = other.get_inter_vertex_list(self);
-        //println!("SUBJECT = {:#?} \n OTHER = {:#?}", option, other_option);
         match option {
             PolyListOption::List(subject_list) => {
                 match other_option {
@@ -214,14 +213,12 @@ impl Polygon {
         let mut result: Vec<Vec<Point>> = Vec::new();
         while let Some(start_point) =
             InterVertex::get_first_in_intersection(&mut subject) {
-            //println!(">> start ====> {:?}", subject);
             if let Some(poly) =
                 Polygon::get_clip_polygon(&mut subject, &mut clip, start_point.clone()) {
                 result.push(poly);
             } else {
                 break;
             }
-            //println!(">> after ====> {:?}", subject);
         };
         if result.len() > 0 {
             Some(result)
@@ -239,10 +236,6 @@ impl Polygon {
         let mut start_point = initial.clone();
         let mut end_point = subject[subject.len()-1].clone().get_point();
         while initial != end_point {
-//            if subject_as_list{println!("is_subject");
-//                println!(">> before ====> {:?}", subject);
-//            }else{println!("is_clip")};
-
             if let Some(values) = Polygon::collect_from_list(
                 if subject_as_list{subject}else{clip}
                 , start_point) {
@@ -257,6 +250,7 @@ impl Polygon {
                 result.append(&mut edges);
             } else {
                 println!("something went wrong");
+                println!("res {:?}", result);
                 return None
             }
         };
@@ -288,14 +282,7 @@ impl Polygon {
                 };
 
                 let next_point = &list[next];
-//                let c = Point{x: 16, y: 18};
-//                if next_point.get_point() == c {
-//                    println!("PRIC {:?}", next_point.get_point());
-//                } else {
-//                    println!("NO {:?}", next_point.get_point());
-//                }
                 if next_point.get_point() == start_point {
-                    println!("CUT HERE {:?}", next_point.get_point());
                     start_i = next;
                     initial_vertex_not_found = false;
                     return true
@@ -306,7 +293,6 @@ impl Polygon {
                 let (i, x) = *x;
 
                 if let InterVertex::OutIntersection(ref p) = *x {
-                    println!("END CUT HERE {:?}", p);
                     end_i = i;
                     last_point = Some(p.clone());
                     return false
@@ -335,6 +321,7 @@ impl Polygon {
             subject = self.get_reversed();
         }
         let mut cursor_inside = false;
+        let mut intersection_count = 0;
         if let Some(start_index) = subject.get_first_outside_vertex_index(poly) {
             if let None = subject.get_first_inside_vertex_index(poly) {
                 if poly.points.iter().all(|x| { x.is_in_polygon(&subject) }) {
@@ -374,10 +361,13 @@ impl Polygon {
                         start: start.clone(),
                         end,
                     };
-
-                    acc.append(&mut poly.get_intersections_with_line(&line, &mut cursor_inside));
+                    let mut intersections = poly
+                        .get_intersections_with_line(&line, &mut cursor_inside);
+                    intersection_count = intersection_count + intersections.len();
+                    acc.append(&mut intersections);
                     acc
                 });
+
             PolyListOption::List(result)
         } else {
             PolyListOption::InsidePoly(self.points.clone())
