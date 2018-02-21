@@ -35,20 +35,22 @@ fn main() {
     // main for test purposes, will be turned to lib in a future
     let poly = Polygon{
         points: vec!(
-            Point{x: 1, y: 1},
-            Point{x: 7, y: 3},
-            Point{x: 1, y: 8},
-            Point{x: 3, y: 4},
-            Point{x: 1, y: 3},
+            Point{x: 16, y: 40},
+            Point{x: 16, y: 10},
+            Point{x: 50, y: 10},
+            Point{x: 50, y: 40},
+            Point{x: 40, y: 40},
+            Point{x: 30, y: 20},
         ),
     };
     let inter_polygon = Polygon{
         points: vec!(
-            Point{x: 4, y: 3},
-            Point{x: 5, y: 4},
-            Point{x: 8, y: 1},
-            Point{x: 8, y: 5},
-            Point{x: 4, y: 7}),
+            Point{x: 8, y: 24},
+            Point{x: 35, y: 14},
+            Point{x: 43, y: 31},
+            Point{x: 44, y: 50},
+            Point{x: 30, y: 30},
+        ),
     };
 
     let p = Point{
@@ -290,8 +292,8 @@ impl Polygon {
             .skip_while(|x|{
                 // need to skip until InIntersection occurs,
                 // but include the InIntersection
-                if dont_skip {return false};
-                let (i, _) = *x;
+                if dont_skip || !initial_vertex_not_found {return false};
+                let (i, p) = *x;
                 let next = if i == list.len() - 1 {
                     0
                 } else {
