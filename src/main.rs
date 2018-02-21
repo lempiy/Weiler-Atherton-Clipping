@@ -1,5 +1,35 @@
 use std::cmp::Ordering;
 
+#[derive(Clone,Debug,Copy)]
+struct Point {
+    x: i32,
+    y: i32,
+}
+#[derive(Clone,Debug)]
+struct Line {
+    start: Point,
+    end: Point,
+}
+
+#[derive(Debug, Clone)]
+struct Polygon {
+    points: Vec<Point>
+}
+
+#[derive(Clone,Debug)]
+enum PolyListOption {
+    List(Vec<InterVertex>),
+    InsidePoly(Vec<Point>),
+    None
+}
+
+#[derive(Clone,Debug,Copy)]
+enum InterVertex {
+    InsideVertex(Point),
+    OutsideVertex(Point),
+    InIntersection(Point),
+    OutIntersection(Point),
+}
 
 fn main() {
     // main for test purposes, will be turned to lib in a future
@@ -39,37 +69,6 @@ fn main() {
     } else {
         println!("None");
     }
-}
-
-#[derive(Clone,Debug,Copy)]
-struct Point {
-    x: i32,
-    y: i32,
-}
-#[derive(Clone,Debug)]
-struct Line {
-    start: Point,
-    end: Point,
-}
-
-#[derive(Debug, Clone)]
-struct Polygon {
-    points: Vec<Point>
-}
-
-#[derive(Clone,Debug)]
-enum PolyListOption {
-    List(Vec<InterVertex>),
-    InsidePoly(Vec<Point>),
-    None
-}
-
-#[derive(Clone,Debug,Copy)]
-enum InterVertex {
-    InsideVertex(Point),
-    OutsideVertex(Point),
-    InIntersection(Point),
-    OutIntersection(Point),
 }
 
 impl InterVertex {
