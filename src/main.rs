@@ -255,6 +255,24 @@ impl Polygon {
             }
         };
         if result.len() > 0 {
+            result = result
+                .iter()
+                .enumerate()
+                .filter_map(|x| {
+                    let (i, x) = x;
+                    let next = if i == result.len() - 1 {
+                        0
+                    } else {
+                        i + 1
+                    };
+                    let next_point = &result[next];
+                    if *next_point == *x {
+                        None
+                    } else {
+                        Some(*x)
+                    }
+                })
+                .collect();
             Some(result)
         } else {
             None
