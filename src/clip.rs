@@ -1,19 +1,19 @@
 use std::cmp::Ordering;
 
 #[derive(Clone, Debug, Copy)]
-struct Point {
-    x: i32,
-    y: i32,
+pub struct Point {
+    pub x: i32,
+    pub y: i32,
 }
 #[derive(Clone, Debug)]
-struct Line {
-    start: Point,
-    end: Point,
+pub struct Line {
+    pub start: Point,
+    pub end: Point,
 }
 
 #[derive(Debug, Clone)]
-struct Polygon {
-    points: Vec<Point>,
+pub struct Polygon {
+    pub points: Vec<Point>,
 }
 
 #[derive(Clone, Debug)]
@@ -29,45 +29,6 @@ enum InterVertex {
     OutsideVertex(Point),
     InIntersection(Point),
     OutIntersection(Point),
-}
-
-fn main() {
-    // main for test purposes, will be turned to lib in a future
-    let poly = Polygon {
-        points: vec![
-            Point { x: 16, y: 40 },
-            Point { x: 16, y: 10 },
-            Point { x: 50, y: 10 },
-            Point { x: 50, y: 40 },
-            Point { x: 40, y: 40 },
-            Point { x: 30, y: 20 },
-        ],
-    };
-    let inter_polygon = Polygon {
-        points: vec![
-            Point { x: 8, y: 24 },
-            Point { x: 35, y: 14 },
-            Point { x: 43, y: 31 },
-            Point { x: 44, y: 50 },
-            Point { x: 30, y: 30 },
-        ],
-    };
-
-    let p = Point { x: 5, y: 4 };
-
-
-    let line = Line {
-        start: Point { x: 5, y: 5 },
-        end: Point { x: 5, y: 20 },
-    };
-
-    let _result = p.is_in_line(&line);
-
-    if let Some(polygons) = poly.clip(&inter_polygon) {
-        println!("CLIP RESULT {:?}", polygons);
-    } else {
-        println!("None");
-    }
 }
 
 impl InterVertex {
@@ -111,7 +72,7 @@ impl PartialEq for Point {
 impl Eq for Point {}
 
 impl Point {
-    fn is_in_polygon(&self, poly: &Polygon) -> bool {
+    pub fn is_in_polygon(&self, poly: &Polygon) -> bool {
         let (x, y) = (self.x, self.y);
         let mut inside: bool = false;
         let mut j = poly.points.len() - 1;
@@ -141,7 +102,7 @@ impl Point {
         }
     }
 
-    fn is_in_line(&self, line: &Line) -> bool {
+    pub fn is_in_line(&self, line: &Line) -> bool {
         let dxc = self.x - line.start.x;
         let dyc = self.y - line.start.y;
 
@@ -171,7 +132,7 @@ impl Point {
 }
 
 impl Polygon {
-    fn is_clockwise(&self) -> bool {
+    pub fn is_clockwise(&self) -> bool {
         let mut sum = 0;
         for (i, p) in self.points.iter().enumerate() {
             let mut j = if i != self.points.len() - 1 { i + 1 } else { 0 };
@@ -184,7 +145,7 @@ impl Polygon {
         Polygon { points }
     }
 
-    fn clip(&self, other: &Polygon) -> Option<Vec<Vec<Point>>> {
+    pub fn clip(&self, other: &Polygon) -> Option<Vec<Vec<Point>>> {
         let option = self.get_inter_vertex_list(other);
         let other_option = other.get_inter_vertex_list(self);
         match option {
@@ -289,7 +250,7 @@ impl Polygon {
                 if dont_skip || !initial_vertex_not_found {
                     return false;
                 };
-                let (i, p) = *x;
+                let (i, _) = *x;
                 let next = if i == list.len() - 1 { 0 } else { i + 1 };
 
                 let next_point = &list[next];
@@ -323,7 +284,7 @@ impl Polygon {
             })
             .collect();
         let amount = end_i - start_i;
-        for i in 0..amount {
+        for _ in 0..amount {
             list.remove(start_i);
         }
         if points.len() > 0 {
@@ -380,8 +341,17 @@ impl Polygon {
                     acc.append(&mut intersections);
                     acc
                 });
-
-            PolyListOption::List(result)
+            // Check if there are any intersection
+            if result.iter().find(|x| {
+                match **x {
+                    InterVertex::InsideVertex(_) | InterVertex::OutsideVertex(_) => false,
+                    InterVertex::InIntersection(_) | InterVertex::OutIntersection(_) => true,
+                }
+            }).is_none() {
+                PolyListOption::None
+            } else {
+                PolyListOption::List(result)
+            }
         } else {
             PolyListOption::InsidePoly(self.points.clone())
         }
@@ -430,7 +400,7 @@ impl Polygon {
     }
 }
 impl Line {
-    fn get_intersection(self, line: &Line) -> Option<Point> {
+    pub fn get_intersection(self, line: &Line) -> Option<Point> {
         let (line_1_start, line_1_end) = (self.start, self.end);
         let (line_2_start, line_2_end) = (line.start.clone(), line.end.clone());
 
