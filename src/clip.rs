@@ -425,8 +425,8 @@ impl Line {
         }
 
         let result = Point {
-            x: line_1_start.x + (a * (line_1_end.x - line_1_start.x) as f64).ceil() as i32,
-            y: line_1_start.y + (a * (line_1_end.y - line_1_start.y) as f64).ceil() as i32,
+            x: line_1_start.x + (a * (line_1_end.x - line_1_start.x) as f64).round() as i32,
+            y: line_1_start.y + (a * (line_1_end.y - line_1_start.y) as f64).round() as i32,
         };
 
         Some(result)
