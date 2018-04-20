@@ -34,27 +34,29 @@ mod tests {
     fn clip_works() {
         let poly = clip::Polygon {
             points: vec![
-                clip::Point { x: 16, y: 40 },
-                clip::Point { x: 16, y: 10 },
-                clip::Point { x: 50, y: 10 },
-                clip::Point { x: 50, y: 40 },
-                clip::Point { x: 40, y: 40 },
-                clip::Point { x: 30, y: 20 },
+                clip::Point {x: 168, y: 408},
+                clip::Point {x: 168, y: 108},
+                clip::Point {x: 508, y: 108},
+                clip::Point {x: 508, y: 408},
+                clip::Point {x: 408, y: 408},
+                clip::Point {x: 308, y: 208}
             ],
         };
         let inter_polygon = clip::Polygon {
             points: vec![
-                clip::Point { x: 8, y: 24 },
-                clip::Point { x: 35, y: 14 },
-                clip::Point { x: 43, y: 31 },
-                clip::Point { x: 44, y: 50 },
-                clip::Point { x: 30, y: 30 },
+                clip::Point {x: 72, y: 232},
+                clip::Point {x: 342, y: 132},
+                clip::Point {x: 422, y: 302},
+                clip::Point {x: 92, y: 492},
+                clip::Point {x: 292, y: 292}
             ],
         };
 
         if let Some(polygons) = poly.clip(&inter_polygon) {
+            println!("{:?}", polygons);
             assert!(polygons.len() > 0);
         } else {
+            println!("here");
             assert!(false)
         }
     }
