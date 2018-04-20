@@ -1,9 +1,4 @@
-extern crate rust_decimal;
-extern crate num_traits;
-
 use std::cmp::Ordering;
-use self::rust_decimal::Decimal;
-use clip::num_traits::ToPrimitive;
 
 #[derive(Clone, Debug, Copy)]
 pub struct Point {
@@ -84,15 +79,8 @@ impl Point {
         for (i, p) in poly.points.iter().enumerate() {
             let (xi, yi) = (p.x, p.y);
             let (xj, yj) = (poly.points[j].x, poly.points[j].y);
-
-            let x_i_dc:Decimal = ((xj - xi) * (y - yi)).into();
-            let x_dc:Decimal = x.into();
-
-            let y_i_dc:Decimal = (yj - yi).into();
-            let xi_dc:Decimal = xi.into();
-
             let intersect = ((yi > y) != (yj > y))
-                && (x_dc < x_i_dc / y_i_dc + xi_dc);
+                && ((x as f64) < ((xj - xi) * (y - yi)) as f64 / (yj - yi) as f64 + xi as f64);
             if intersect {
                 inside = !inside;
             }
@@ -428,28 +416,17 @@ impl Line {
 
         let num_1 = ((line_2_end.x - line_2_start.x) * a) - ((line_2_end.y - line_2_start.y) * b);
         let num_2 = ((line_1_end.x - line_1_start.x) * a) - ((line_1_end.y - line_1_start.y) * b);
-        
-        let num_1_dc:Decimal = num_1.into();
-        let num_2_dc:Decimal = num_2.into();
-        let den_dc:Decimal = den.into();
-        let zero:Decimal = 0i32.into();
-        let one:Decimal = 1i32.into();
 
-        let a = num_1_dc / den_dc;
-        let b = num_2_dc / den_dc;
+        let a = num_1 as f64 / den as f64;
+        let b = num_2 as f64 / den as f64;
 
-        if a < zero || a > one || b < zero || b > one {
+        if a < 0.0 || a > 1.0 || b < 0.0 || b > 1.0 {
             return None;
         }
-        let diff_x:Decimal = (line_1_end.x - line_1_start.x).into();
-        let diff_y:Decimal = (line_1_end.y - line_1_start.y).into();
-
-        let a_value_x:Decimal = a * diff_x;
-        let a_value_y:Decimal = a * diff_y;
 
         let result = Point {
-            x: line_1_start.x + a_value_x.round().to_i32().unwrap(),
-            y: line_1_start.y + a_value_y.round().to_i32().unwrap(),
+            x: line_1_start.x + (a * (line_1_end.x - line_1_start.x) as f64).round() as i32,
+            y: line_1_start.y + (a * (line_1_end.y - line_1_start.y) as f64).round() as i32,
         };
 
         Some(result)
