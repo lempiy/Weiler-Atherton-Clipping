@@ -373,7 +373,16 @@ impl Polygon {
                     start: start.clone(),
                     end,
                 };
-                l.get_intersection(line)
+                if let Some(p) = l.get_intersection(line) {
+                    if p == line.start || p == line.end ||
+                        p == *start || p == end {
+                        None
+                    } else {
+                        Some(p)
+                    }
+                } else {
+                    None
+                }
             })
             .collect();
         lines.sort_by(|a, b| line.start.distance_cmp(a, b));
