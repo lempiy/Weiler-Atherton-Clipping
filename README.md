@@ -6,6 +6,8 @@ clipping of a subject or candidate polygon by an arbitrarily shaped clipping pol
 
 ![Example](http://what-when-how.com/wp-content/uploads/2012/06/tmpc646365_thumb2221.png)
 
+##### [PREVIEW](https://lempiy.github.io/WebAssemply-Clipping/)
+
 ##### TODOS:
 - Add multi-threads for list creation
 - Reduce allocations
