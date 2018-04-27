@@ -54,7 +54,7 @@ mod tests {
 
         if let Some(polygons) = poly.clip(&inter_polygon) {
             println!("{:?}", polygons);
-            assert!(polygons.len() < 0);
+            assert!(polygons.len() > 0);
         } else {
             println!("here");
             assert!(false)
